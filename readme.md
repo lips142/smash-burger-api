@@ -139,7 +139,7 @@ fastapi-api/
 # Como Executar o Projeto
 
 Clonar o repositório
-git clone https://github.com/seu-usuario/smash-burguer-api.git
+git clone https://github.com/lips142/smash-burguer-api.git
 cd smash-burguer-api
 
 
@@ -164,7 +164,7 @@ pip install fastapi uvicorn sqlalchemy psycopg2
 
 No arquivo database.py:
 
-DATABASE_URL = "postgresql://usuario:senha@localhost:5432/smashdb"
+DATABASE_URL = "postgresql://smashuser:123@localhost:5432/smashdb"
 
 
 # Criar tabelas
