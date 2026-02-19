@@ -5,7 +5,7 @@ from app import models, database
 
 router = APIRouter()
 
-# Dependência para obter sessão do banco
+
 def get_db():
     db = database.SessionLocal()
     try:
@@ -13,13 +13,12 @@ def get_db():
     finally:
         db.close()
 
-# Listar todos os produtos
+
 @router.get("/produtos", response_model=List[models.Produto])
 def listar_produtos(db: Session = Depends(get_db)):
     produtos = db.query(models.ProdutoDB).all()
     return produtos
 
-# Adicionar produto
 @router.post("/produtos", response_model=models.Produto)
 def adicionar_produto(produto: models.ProdutoCreate, db: Session = Depends(get_db)):
     novo_produto = models.ProdutoDB(

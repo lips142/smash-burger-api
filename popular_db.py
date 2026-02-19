@@ -3,11 +3,11 @@ from app.models import ProdutoDB
 
 db = SessionLocal()
 
-# Apaga todos os registros antigos
+
 db.query(ProdutoDB).delete()
 db.commit()
 
-# Insere novos produtos
+
 produtos = [
     ProdutoDB(
         nome="Smash Cheaddar",

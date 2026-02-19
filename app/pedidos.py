@@ -20,7 +20,7 @@ def criar_pedido(pedido: models.PedidoCreate, db: Session = Depends(get_db)):
         usuario_id=pedido.usuario_id,
         total=pedido.total,
         data=datetime.datetime.utcnow(),
-        status=pedido.status  # ← agora respeita o que veio do Flutter
+        status=pedido.status 
     )
     db.add(novo_pedido)
     db.commit()
