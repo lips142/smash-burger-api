@@ -34,3 +34,20 @@ def listar_pedidos(usuario_id: int, db: Session = Depends(get_db)):
     if not pedidos:
         raise HTTPException(status_code=404, detail="Nenhum pedido encontrado")
     return pedidos
+
+    
+@router.put("/pedidos/{pedido_id}/status")
+def atualizar_status(pedido_id: int, status: str, db: Session = Depends(get_db)):
+
+    pedido = db.query(models.PedidoDB).filter(models.PedidoDB.id == pedido_id).first()
+    
+  
+    if not pedido:
+        raise HTTPException(status_code=404, detail="Pedido não encontrado")
+    
+
+    pedido.status = status
+    db.commit()
+    db.refresh(pedido)
+    
+    return {"message": "Status atualizado com sucesso", "novo_status": pedido.status}

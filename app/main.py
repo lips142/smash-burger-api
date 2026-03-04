@@ -7,7 +7,8 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime, timedelta
-
+from fastapi import UploadFile, File, Form
+from app import pedidos
 app = FastAPI()
 
 app.add_middleware(
@@ -17,6 +18,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.include_router(pedidos.router)
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
@@ -27,7 +29,7 @@ def get_db():
     finally:
         db.close()
 
-# Função para garantir que o pedido seja salvo no horário de Brasília
+
 def obter_hora_brasil():
     return datetime.utcnow() - timedelta(hours=3)
 
@@ -94,29 +96,57 @@ def cadastro(user: UsuarioCreate, db: Session = Depends(get_db)):
     return {"success": True, "usuario_id": novo_usuario.id}
 
 
+import base64
+
 @app.get("/usuarios/{usuario_id}")
 def obter_usuario(usuario_id: int, db: Session = Depends(get_db)):
     user = db.query(models.UsuarioDB).filter(models.UsuarioDB.id == usuario_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="Usuário não encontrado")
 
-    num_str = str(user.numero) if user.numero and user.numero != 0 else "S/N"
+   
+    foto_blob = getattr(user, 'foto', None)
+    foto_base64 = None
+    if foto_blob:
+        import base64
+        foto_base64 = base64.b64encode(foto_blob).decode('utf-8')
 
     return {
         "id": user.id,
-        "nome_exibicao": f"{user.nome} {user.sobrenome}",
-        "primeiro_nome": user.nome,
         "nome": user.nome,
         "sobrenome": user.sobrenome,
         "email": user.email,
         "endereco": user.endereco,
-        "rua": user.endereco, 
-        "numero": num_str,
         "ponto_referencia": user.ponto_referencia,
         "telefone": user.telefone,
-        "foto_url": user.foto_url
+        "foto_bytes": foto_base64
     }
+@app.post("/usuarios/{usuario_id}")
+async def atualizar_usuario(
+    usuario_id: int,
+    nome: str = Form(...),
+    sobrenome: str = Form(...),
+    endereco: str = Form(...),
+    ponto_referencia: str = Form(...),
+    telefone: str = Form(...),
+    file: UploadFile = File(None),
+    db: Session = Depends(get_db)
+):
+    user = db.query(models.UsuarioDB).filter(models.UsuarioDB.id == usuario_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuário não encontrado")
 
+ 
+    user.nome = nome
+    user.sobrenome = sobrenome
+    user.endereco = endereco
+    user.ponto_referencia = ponto_referencia
+    user.telefone = telefone
+    if file:
+        user.foto = await file.read() 
+
+    db.commit()
+    return {"status": "sucesso"}
 
 
 @app.get("/produtos")
@@ -213,12 +243,3 @@ def listar_itens_pedido(pedido_id: int, db: Session = Depends(get_db)):
         "quantidade": it.quantidade, "preco": float(it.preco)
     } for it, n, img in itens]
 
-@app.put("/pedidos/{pedido_id}/status")
-def atualizar_status(pedido_id: int, status: str, db: Session = Depends(get_db)):
-    pedido = db.query(models.PedidoDB).filter(models.PedidoDB.id == pedido_id).first()
-    if not pedido:
-        raise HTTPException(status_code=404, detail="Pedido não encontrado")
-    
-    pedido.status = status
-    db.commit()
-    return {"success": True}

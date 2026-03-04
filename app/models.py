@@ -6,7 +6,7 @@ from sqlalchemy import Column, Integer, String, Float, ForeignKey, DateTime, Num
 from sqlalchemy.orm import relationship
 import datetime
 
-
+from sqlalchemy import Column, Integer, String, LargeBinary, ForeignKey 
 
 class ProdutoDB(Base):
     __tablename__ = "produtos"
@@ -40,7 +40,8 @@ class UsuarioDB(Base):
     ponto_referencia = Column(String, nullable=True) 
     numero = Column(Integer)
     password = Column(String, nullable=False)
-    foto_url = Column(String, nullable=True) 
+    foto_url = Column(String, nullable=True)
+    foto = Column(LargeBinary, nullable=True)
 
 class CarrinhoDB(Base):
     __tablename__ = "carrinho"
@@ -72,6 +73,7 @@ class PedidoDB(Base):
     data = Column(DateTime, default=datetime.datetime.utcnow)
     status = Column(String, default="Pedido aceito")
     itens = relationship("ItemPedidoDB", back_populates="pedido")
+    previsao_entrega = Column(DateTime)
     rua_entrega = Column(String)
     numero_entrega = Column(String)
     ponto_referencia = Column(String)
@@ -164,7 +166,7 @@ class Pedido(BaseModel):
     data: datetime.datetime
     status: str
     itens: List[ItemPedido] = []
-
+    previsao_entrega: Optional[datetime.datetime] = None
     class Config:
         from_attributes = True  
 
