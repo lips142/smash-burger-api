@@ -1,0 +1,468 @@
+/* ============================================
+   PAINEL DE PEDIDOS — SMASH BURGUER
+   Identidade: Kitchen Display System (KDS)
+   Comandas de cozinha, tipografia de recibo
+   ============================================ */
+
+:root {
+  /* Paleta — carvão da grelha + chama laranja */
+  --bg: #17140f;
+  --surface: #221e17;
+  --surface-2: #2c2620;
+  --border: #3a332a;
+  --border-soft: #2c2620;
+
+  --text: #f5f1e8;
+  --text-dim: #a89f8e;
+  --text-faint: #6f6759;
+
+  --flame: #ff5a1f;
+  --flame-dim: #ff5a1f33;
+
+  --status-novo: #ff3b30;
+  --status-preparando: #ffb020;
+  --status-enviado: #2f9bff;
+  --status-finalizado: #35c46a;
+
+  --radius: 10px;
+  --radius-sm: 6px;
+
+  --font-mono: 'IBM Plex Mono', 'Courier New', monospace;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--bg);
+  background-image:
+    radial-gradient(circle at 15% 0%, #2a2118 0%, transparent 45%),
+    radial-gradient(circle at 85% 100%, #1c1a2e 0%, transparent 40%);
+  font-family: var(--font-body);
+  color: var(--text);
+}
+
+/* ---------- HEADER ---------- */
+
+header.top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 22px 20px;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  background: var(--bg);
+}
+
+header.top-bar .flame-mark {
+  color: var(--flame);
+  font-family: var(--font-mono);
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -1px;
+}
+
+header.top-bar h1 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+header.top-bar .subtitle {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-faint);
+  margin-left: 4px;
+}
+
+/* ---------- TABS ---------- */
+
+.tabs {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  padding: 14px 20px 0;
+  background: var(--bg);
+  position: sticky;
+  top: 73px;
+  z-index: 190;
+  flex-wrap: wrap;
+}
+
+.tab-btn {
+  padding: 10px 22px;
+  border: 1px solid transparent;
+  background: none;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.tab-btn:hover {
+  color: var(--text);
+  background: var(--surface);
+}
+
+.tab-btn.active {
+  color: var(--flame);
+  background: var(--surface);
+  border-color: var(--border);
+  border-bottom: 2px solid var(--flame);
+}
+
+.tab-count {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 6px;
+  font-size: 11px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--text-dim);
+}
+
+.tab-btn.active .tab-count {
+  background: var(--flame-dim);
+  color: var(--flame);
+}
+
+/* ---------- FILTRO DE DATA ---------- */
+
+#filtro-data-container {
+  padding: 14px 20px;
+  background: var(--surface);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+#filtro-data-container label {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-dim);
+}
+
+#input-data {
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+
+/* ---------- GRID ---------- */
+
+.container {
+  padding: 24px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+.empty-state {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 80px 20px;
+  color: var(--text-faint);
+  font-family: var(--font-mono);
+  font-size: 14px;
+}
+
+/* ---------- TICKET / COMANDA ---------- */
+
+.pedido-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  animation: ticket-in 0.25s ease;
+}
+
+@keyframes ticket-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.pedido-card.urgente {
+  border-color: var(--status-novo);
+  box-shadow: 0 0 0 1px var(--status-novo);
+}
+
+.ticket-perf {
+  height: 8px;
+  background-image: radial-gradient(circle, var(--bg) 3px, transparent 3.5px);
+  background-size: 16px 16px;
+  background-position: center;
+  background-color: var(--surface-2);
+}
+
+.pedido-header {
+  padding: 16px 18px 12px;
+  border-bottom: 1px dashed var(--border);
+}
+
+.pedido-header .row-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.ticket-id {
+  font-family: var(--font-mono);
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  color: var(--text);
+}
+
+.ticket-id span {
+  color: var(--text-faint);
+  font-size: 15px;
+}
+
+.cliente-nome {
+  font-size: 13px;
+  color: var(--text-dim);
+  margin-top: 2px;
+}
+
+.timer-chip {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 9px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+
+.timer-chip.alerta {
+  background: var(--status-novo);
+  color: #fff;
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.status-stamp {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  padding: 4px 12px;
+  border: 1.5px solid currentColor;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.status-stamp::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.status-stamp.novopedido { color: var(--status-novo); }
+.status-stamp.preparando { color: var(--status-preparando); }
+.status-stamp.enviado { color: var(--status-enviado); }
+.status-stamp.finalizado { color: var(--status-finalizado); }
+
+.horario-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--text-dim);
+}
+
+.horario-info strong {
+  color: var(--text);
+  font-weight: 700;
+}
+
+.horario-info .separador {
+  color: var(--text-faint);
+}
+
+.horario-info .prazo-estourado,
+.horario-info .prazo-estourado strong {
+  color: var(--status-novo);
+}
+
+/* ---------- ITENS ---------- */
+
+.itens-lista {
+  padding: 12px 18px;
+  flex: 1;
+}
+
+.item-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+}
+
+.item-row + .item-row {
+  border-top: 1px solid var(--border-soft);
+}
+
+.item-row img {
+  width: 42px;
+  height: 42px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  flex-shrink: 0;
+}
+
+.item-qty {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--flame);
+  min-width: 24px;
+}
+
+.item-nome {
+  font-size: 13.5px;
+  color: var(--text);
+}
+
+.item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.item-ingredientes {
+  font-size: 11.5px;
+  color: var(--text-faint);
+  line-height: 1.4;
+}
+
+.itens-loading {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-faint);
+  padding: 8px 0;
+}
+
+/* ---------- RODAPÉ / TOTAL + AÇÃO ---------- */
+
+.pedido-footer {
+  padding: 14px 18px 18px;
+  border-top: 1px dashed var(--border);
+}
+
+.total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 12px;
+  font-family: var(--font-mono);
+}
+
+.total-row .label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-faint);
+}
+
+.total-row .valor {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.btn {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #14110c;
+  transition: filter 0.15s ease, transform 0.1s ease;
+}
+
+.btn:hover { filter: brightness(1.08); }
+.btn:active { transform: scale(0.98); }
+
+.btn-preparar { background-color: var(--status-preparando); }
+.btn-enviar { background-color: var(--status-enviado); color: #fff; }
+.btn-finalizar { background-color: var(--status-finalizado); }
+
+/* ---------- RESPONSIVO ---------- */
+
+@media (max-width: 640px) {
+  .container {
+    grid-template-columns: 1fr;
+    padding: 16px;
+  }
+  .tabs {
+    top: 65px;
+    padding: 10px 10px 0;
+  }
+  .tab-btn {
+    padding: 9px 14px;
+    font-size: 12px;
+  }
+}
+
+/* ---------- ACESSIBILIDADE ---------- */
+
+.btn:focus-visible,
+.tab-btn:focus-visible,
+#input-data:focus-visible {
+  outline: 2px solid var(--flame);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pedido-card { animation: none; }
+  .timer-chip.alerta { animation: none; }
+}

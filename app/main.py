@@ -130,12 +130,12 @@ def listar_itens_pedido(pedido_id: int, db: Session = Depends(get_db)):
     resultado = []
     for item in itens:
         if not item.produto:
-           
             resultado.append({
                 "nome": "Produto indisponível",
                 "quantidade": item.quantidade,
                 "preco": float(item.preco),
-                "imagem": None
+                "imagem": None,
+                "ingredientes": []
             })
             continue
 
@@ -146,9 +146,11 @@ def listar_itens_pedido(pedido_id: int, db: Session = Depends(get_db)):
             "nome": item.produto.nome,
             "quantidade": item.quantidade,
             "preco": float(item.preco),
-            "imagem": url_formatada
+            "imagem": url_formatada,
+            "ingredientes": item.produto.ingredientes or []
         })
     return resultado
+
 @app.get("/pedidos/usuario/{usuario_id}")
 def listar_pedidos_usuario(usuario_id: int, db: Session = Depends(get_db)):
     
@@ -207,3 +209,13 @@ async def atualizar_usuario(
     db.refresh(usuario)
 
     return {"success": True, "message": "Perfil atualizado com sucesso"}
+
+@app.put("/pedidos/{pedido_id}/status")
+def atualizar_status_pedido(pedido_id: int, status: str, db: Session = Depends(get_db)):
+    pedido = db.query(models.PedidoDB).filter(models.PedidoDB.id == pedido_id).first()
+    if not pedido:
+        raise HTTPException(status_code=404, detail="Pedido não encontrado")
+    pedido.status = status
+    db.commit()
+    db.refresh(pedido)
+    return {"success": True, "status": pedido.status}
