@@ -147,16 +147,23 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 4. Configurar banco de dados
+### 4. Subir o banco (Docker)
 
-Copie `.env.example` para `.env` e ajuste a connection string:
+```bash
+docker compose up -d
+```
+
+Sobe um Postgres em `localhost:5433` (banco `smashdb`, user `smashuser`). Só o
+banco roda em container — a API roda local, fora do Docker.
+
+Copie `.env.example` para `.env` (já aponta para o banco do compose):
 
 ```bash
 cp .env.example .env
 ```
 
 ```
-DATABASE_URL=postgresql://smashuser:123@localhost:5432/smashdb
+DATABASE_URL=postgresql://smashuser:123@localhost:5433/smashdb
 ```
 
 ### 5. Criar tabelas
