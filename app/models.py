@@ -60,8 +60,9 @@ class ItemPedidoDB(Base):
     produto_id = Column(Integer, ForeignKey("produtos.id"))
     quantidade = Column(Integer)
     preco = Column(Float)
-
+    produto = relationship("ProdutoDB") 
     pedido = relationship("PedidoDB", back_populates="itens")
+
 
 
 class PedidoDB(Base):
