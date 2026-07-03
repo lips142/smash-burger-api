@@ -148,19 +148,26 @@
       }
     }
 
-    async function carregarItensParaCard(pedidoId) {
-      const itensDiv = document.getElementById(`itens-${pedidoId}`);
-      try {
-        const resp = await fetch(`${apiBase}/pedidos/${pedidoId}/itens`);
-        const itens = await resp.json();
-        itensDiv.innerHTML = itens.map(item => `
-          <div class="item">
-            <img src="${apiBase}/static/images/${item.imagem?.split('/').pop() || ''}" onerror="this.src='https://via.placeholder.com/50';">
-            <div class="item-info"><h4>${item.quantidade}x ${item.nome}</h4></div>
-          </div>
-        `).join("");
-      } catch (e) { itensDiv.innerHTML = "<p>Erro ao carregar itens</p>"; }
-    }
+  async function carregarItensParaCard(pedidoId) {
+  const itensDiv = document.getElementById(`itens-${pedidoId}`);
+  try {
+    const resp = await fetch(`${apiBase}/pedidos/${pedidoId}/itens`);
+    const itens = await resp.json();
+    
+    itensDiv.innerHTML = itens.map(item => {
+      // Extrai apenas o nome do arquivo da imagem
+      const nomeImagem = item.imagem ? item.imagem.split('/').pop() : '';
+      const urlCompleta = `${apiBase}/static/images/${nomeImagem}`;
+      
+      return `
+        <div class="item">
+          <img src="${urlCompleta}" onerror="this.src='https://via.placeholder.com/50?text=Lanche';">
+          <div class="item-info"><h4>${item.quantidade}x ${item.nome}</h4></div>
+        </div>
+      `;
+    }).join("");
+  } catch (e) { itensDiv.innerHTML = "<p>Erro ao carregar itens</p>"; }
+}
 
     async function atualizarStatus(pedidoId, novoStatus) {
       try {

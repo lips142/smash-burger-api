@@ -127,27 +127,40 @@ async def atualizar_usuario(
     nome: str = Form(...),
     sobrenome: str = Form(...),
     endereco: str = Form(...),
-    ponto_referencia: str = Form(...),
-    telefone: str = Form(...),
+    ponto_referencia: str = Form(""), 
+    telefone: str = Form(""),         
     file: UploadFile = File(None),
     db: Session = Depends(get_db)
 ):
+   
     user = db.query(models.UsuarioDB).filter(models.UsuarioDB.id == usuario_id).first()
+    
     if not user:
+        print(f"ERRO: Usuário {usuario_id} não encontrado no banco.")
         raise HTTPException(status_code=404, detail="Usuário não encontrado")
 
- 
-    user.nome = nome
-    user.sobrenome = sobrenome
-    user.endereco = endereco
-    user.ponto_referencia = ponto_referencia
-    user.telefone = telefone
-    if file:
-        user.foto = await file.read() 
+    try:
+       
+        user.nome = nome
+        user.sobrenome = sobrenome
+        user.endereco = endereco
+        user.ponto_referencia = ponto_referencia
+        user.telefone = telefone
+        
+        if file:
+            user.foto = await file.read() 
 
-    db.commit()
-    return {"status": "sucesso"}
+    
+        db.commit()
+        db.refresh(user)
+        
+        print(f"SUCESSO: Usuário {usuario_id} atualizado para {nome} {sobrenome}")
+        return {"status": "sucesso", "nome_atualizado": user.nome}
 
+    except Exception as e:
+        db.rollback() 
+        print(f"ERRO NO BANCO: {str(e)}")
+        raise HTTPException(status_code=500, detail="Erro interno ao salvar no banco")
 
 @app.get("/produtos")
 def listar_produtos(db: Session = Depends(get_db)):
@@ -157,6 +170,12 @@ def listar_produtos(db: Session = Depends(get_db)):
 
 @app.post("/pedidos")
 def criar_pedido(pedido: PedidoCreate, db: Session = Depends(get_db)):
+    # 1. VEJA SE CHEGOU ALGO NO TERMINAL DO PYTHON
+    print("========================================")
+    print(f"RECEBIDO DO FLUTTER: {pedido.json()}") 
+    print(f"QUANTIDADE DE ITENS NA LISTA: {len(pedido.itens)}")
+    print("========================================")
+
     try:
         user = db.query(models.UsuarioDB).filter(models.UsuarioDB.id == pedido.usuario_id).first()
         if not user:
@@ -171,11 +190,15 @@ def criar_pedido(pedido: PedidoCreate, db: Session = Depends(get_db)):
             numero_entrega=str(user.numero),
             ponto_referencia=user.ponto_referencia
         )
+        
         db.add(novo_pedido)
-        db.commit()
-        db.refresh(novo_pedido)
+        db.flush() 
+
+        if not pedido.itens:
+            print("AVISO: A lista de itens veio VAZIA do frontend!")
 
         for item in pedido.itens:
+            print(f"Salvando item: Produto {item.produto_id}, Qtd {item.quantidade}")
             novo_item = models.ItemPedidoDB(
                 pedido_id=novo_pedido.id,
                 produto_id=item.produto_id,
@@ -184,10 +207,12 @@ def criar_pedido(pedido: PedidoCreate, db: Session = Depends(get_db)):
             )
             db.add(novo_item)
         
-        db.commit()
+        db.commit() 
         return {"success": True, "message": "Pedido criado", "id": novo_pedido.id}
+        
     except Exception as e:
         db.rollback()
+        print(f"ERRO AO SALVAR: {e}")
         raise HTTPException(status_code=400, detail=str(e))
 
 @app.get("/pedidos")
@@ -233,13 +258,19 @@ def listar_pedidos_usuario(usuario_id: int, db: Session = Depends(get_db)):
 
 @app.get("/pedidos/{pedido_id}/itens")
 def listar_itens_pedido(pedido_id: int, db: Session = Depends(get_db)):
-    itens = (
+    itens_db = (
         db.query(models.ItemPedidoDB, models.ProdutoDB.nome, models.ProdutoDB.imagem)
         .join(models.ProdutoDB, models.ItemPedidoDB.produto_id == models.ProdutoDB.id)
         .filter(models.ItemPedidoDB.pedido_id == pedido_id).all()
     )
-    return [{
-        "id": it.id, "nome": n, "imagem": img, 
-        "quantidade": it.quantidade, "preco": float(it.preco)
-    } for it, n, img in itens]
 
+    resultado = []
+    for item_pedido, nome_prod, imagem_prod in itens_db:
+        resultado.append({
+            "id": item_pedido.id,
+            "quantidade": item_pedido.quantidade,
+            "preco": float(item_pedido.preco), # ADICIONE ISSO para o Painel HTML calcular valores
+            "nome": nome_prod,
+            "imagem": f"http://10.0.2.2:8000/static/imagens/{imagem_prod}" if imagem_prod else None
+        })
+    return resultado
