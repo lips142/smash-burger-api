@@ -1,9 +1,14 @@
+import os
+
+from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 
-DATABASE_URL = "postgresql://smashuser:123@localhost:5432/smashdb"
+load_dotenv()
 
-
+DATABASE_URL = os.getenv(
+    "DATABASE_URL", "postgresql://smashuser:123@localhost:5432/smashdb"
+)
 
 engine = create_engine(DATABASE_URL, client_encoding='utf8')
 

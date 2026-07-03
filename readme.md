@@ -23,15 +23,13 @@ smash-burger-api/
 │   ├── main.py            # Aplicação FastAPI e todos os endpoints
 │   ├── database.py        # Conexão com PostgreSQL (SQLAlchemy)
 │   ├── models.py          # Modelos SQLAlchemy e schemas Pydantic
-│   ├── create_tables.py   # Script de criação das tabelas
-│   ├── routes.py          # (não integrado)
-│   ├── produtos.py        # (não integrado)
-│   ├── pedidos.py         # (não integrado)
-│   └── carrinho.py        # (não integrado)
+│   └── create_tables.py   # Script de criação das tabelas
 ├── static/
 │   ├── images/            # Imagens dos produtos
 │   └── index.html
 ├── docs/                  # Documentação dos endpoints
+├── requirements.txt       # Dependências do projeto
+├── .env.example           # Template de variáveis de ambiente
 ├── popular_db.py          # Script para popular o banco com produtos
 └── test_db.py             # Teste de conexão com o banco
 ```
@@ -132,29 +130,40 @@ cd smash-burguer-api
 Windows:
 
 ```bash
-python -m venv venv
-venv\Scripts\activate
+python -m venv .venv
+.venv\Scripts\activate
 ```
 
 Linux/macOS:
 
 ```bash
-python -m venv venv
-source venv/bin/activate
+python -m venv .venv
+source .venv/bin/activate
 ```
 
 ### 3. Instalar dependências
 
 ```bash
-pip install fastapi uvicorn sqlalchemy psycopg2
+pip install -r requirements.txt
 ```
 
-### 4. Configurar banco de dados
+### 4. Subir o banco (Docker)
 
-No arquivo `app/database.py`, ajuste a connection string:
+```bash
+docker compose up -d
+```
 
-```python
-DATABASE_URL = "postgresql://smashuser:123@localhost:5432/smashdb"
+Sobe um Postgres em `localhost:5433` (banco `smashdb`, user `smashuser`). Só o
+banco roda em container — a API roda local, fora do Docker.
+
+Copie `.env.example` para `.env` (já aponta para o banco do compose):
+
+```bash
+cp .env.example .env
+```
+
+```
+DATABASE_URL=postgresql://smashuser:123@localhost:5433/smashdb
 ```
 
 ### 5. Criar tabelas

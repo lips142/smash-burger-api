@@ -1,8 +1,6 @@
 from sqlalchemy import create_engine
 
-DATABASE_URL = "postgresql://smashuser:123@localhost:5432/smashdb"
-
-
+from app.database import DATABASE_URL
 
 engine = create_engine(DATABASE_URL, client_encoding='utf8')
 
