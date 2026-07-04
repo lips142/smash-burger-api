@@ -8,6 +8,8 @@ from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime, timedelta
 import base64
+from app.dependencies import get_db
+from app.utils import obter_hora_brasil
 
 app = FastAPI()
 
@@ -21,16 +23,6 @@ app.add_middleware(
 
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-def obter_hora_brasil():
-    return datetime.utcnow() - timedelta(hours=3)
 
 
 class LoginData(BaseModel):
