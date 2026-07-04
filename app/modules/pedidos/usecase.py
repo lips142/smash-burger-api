@@ -7,11 +7,11 @@ from app.utils import obter_hora_brasil
 
 
 def criar_pedido(db: Session, pedido: PedidoCreate):
-    try:
-        user = db.query(models.UsuarioDB).filter(models.UsuarioDB.id == pedido.usuario_id).first()
-        if not user:
-            raise HTTPException(status_code=404, detail="Usuário não encontrado")
+    user = db.query(models.UsuarioDB).filter(models.UsuarioDB.id == pedido.usuario_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuário não encontrado")
 
+    try:
         novo_pedido = models.PedidoDB(
             usuario_id=pedido.usuario_id,
             total=pedido.total,
