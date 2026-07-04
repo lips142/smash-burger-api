@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, HTTPException, UploadFile, File, Form
+from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.database import SessionLocal
 from app import models
@@ -7,11 +7,11 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime, timedelta
-import base64
 from app.dependencies import get_db
 from app.utils import obter_hora_brasil
 from app.modules.auth.controller import router as auth_router
 from app.modules.produtos.controller import router as produtos_router
+from app.modules.usuarios.controller import router as usuarios_router
 
 app = FastAPI()
 
@@ -28,6 +28,7 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 
 app.include_router(auth_router)
 app.include_router(produtos_router)
+app.include_router(usuarios_router)
 
 
 class ItemPedidoCreate(BaseModel):
@@ -137,52 +138,6 @@ def listar_pedidos_usuario(usuario_id: int, db: Session = Depends(get_db)):
         return []
         
     return pedidos
-
-@app.get("/usuarios/{usuario_id}")
-def obter_usuario(usuario_id: int, db: Session = Depends(get_db)):
-    usuario = db.query(models.UsuarioDB).filter(models.UsuarioDB.id == usuario_id).first()
-    if not usuario:
-        raise HTTPException(status_code=404, detail="Usuário não encontrado")
-    return {
-        "id": usuario.id,
-        "nome": usuario.nome,
-        "sobrenome": usuario.sobrenome,
-        "endereco": usuario.endereco,
-        "ponto_referencia": usuario.ponto_referencia,
-        "foto_bytes": base64.b64encode(usuario.foto).decode('utf-8') if usuario.foto else None,
-        "email": usuario.email,
-        "telefone": usuario.telefone,
-    }
-
-@app.post("/usuarios/{usuario_id}")
-async def atualizar_usuario(
-    usuario_id: int,
-    nome: str = Form(...),
-    sobrenome: str = Form(""),
-    endereco: str = Form(""),
-    ponto_referencia: str = Form(""),
-    telefone: str = Form(""),
-    file: UploadFile = File(None),
-    db: Session = Depends(get_db)
-):
-    usuario = db.query(models.UsuarioDB).filter(models.UsuarioDB.id == usuario_id).first()
-    if not usuario:
-        raise HTTPException(status_code=404, detail="Usuário não encontrado")
-
-    usuario.nome = nome
-    usuario.sobrenome = sobrenome
-    usuario.endereco = endereco
-    usuario.ponto_referencia = ponto_referencia
-    usuario.telefone = telefone
-
-    if file:
-        conteudo = await file.read()
-        usuario.foto = conteudo
-
-    db.commit()
-    db.refresh(usuario)
-
-    return {"success": True, "message": "Perfil atualizado com sucesso"}
 
 @app.put("/pedidos/{pedido_id}/status")
 def atualizar_status_pedido(pedido_id: int, status: str, db: Session = Depends(get_db)):
