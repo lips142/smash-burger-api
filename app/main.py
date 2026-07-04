@@ -11,6 +11,7 @@ import base64
 from app.dependencies import get_db
 from app.utils import obter_hora_brasil
 from app.modules.auth.controller import router as auth_router
+from app.modules.produtos.controller import router as produtos_router
 
 app = FastAPI()
 
@@ -26,6 +27,7 @@ app.add_middleware(
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 app.include_router(auth_router)
+app.include_router(produtos_router)
 
 
 class ItemPedidoCreate(BaseModel):
@@ -38,12 +40,6 @@ class PedidoCreate(BaseModel):
     total: float
     status: str = "Novo pedido"
     itens: List[ItemPedidoCreate] = []
-
-
-
-@app.get("/produtos")
-def listar_produtos(db: Session = Depends(get_db)):
-    return db.query(models.ProdutoDB).all()
 
 @app.post("/pedidos")
 def criar_pedido(pedido: PedidoCreate, db: Session = Depends(get_db)):
