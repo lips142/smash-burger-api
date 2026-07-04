@@ -1,12 +1,11 @@
-from sqlalchemy.dialects.postgresql import JSON
-from app.database import Base
-from pydantic import BaseModel
-from typing import List, Optional
-from sqlalchemy import Column, Integer, String, Float, ForeignKey, DateTime, Numeric
-from sqlalchemy.orm import relationship
 import datetime
 
-from sqlalchemy import Column, Integer, String, LargeBinary, ForeignKey 
+from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, LargeBinary, Numeric, String
+from sqlalchemy.dialects.postgresql import JSON
+from sqlalchemy.orm import relationship
+
+from app.database import Base
+
 
 class ProdutoDB(Base):
     __tablename__ = "produtos"
@@ -25,23 +24,18 @@ class UsuarioDB(Base):
     __tablename__ = "usuarios"
 
     id = Column(Integer, primary_key=True, index=True)
-   
-    username = Column(String, unique=True, nullable=False) 
-    
-  
-    nome = Column(String, nullable=False)     
-    sobrenome = Column(String, nullable=False) 
-    
+    username = Column(String, unique=True, nullable=False)
+    nome = Column(String, nullable=False)
+    sobrenome = Column(String, nullable=False)
     email = Column(String, unique=True, nullable=False)
-    telefone = Column(String, nullable=True) 
-    
-
-    endereco = Column(String, nullable=True)   
-    ponto_referencia = Column(String, nullable=True) 
+    telefone = Column(String, nullable=True)
+    endereco = Column(String, nullable=True)
+    ponto_referencia = Column(String, nullable=True)
     numero = Column(Integer)
     password = Column(String, nullable=False)
     foto_url = Column(String, nullable=True)
     foto = Column(LargeBinary, nullable=True)
+
 
 class CarrinhoDB(Base):
     __tablename__ = "carrinho"
@@ -60,9 +54,8 @@ class ItemPedidoDB(Base):
     produto_id = Column(Integer, ForeignKey("produtos.id"))
     quantidade = Column(Integer)
     preco = Column(Float)
-    produto = relationship("ProdutoDB") 
+    produto = relationship("ProdutoDB")
     pedido = relationship("PedidoDB", back_populates="itens")
-
 
 
 class PedidoDB(Base):
@@ -78,102 +71,3 @@ class PedidoDB(Base):
     rua_entrega = Column(String)
     numero_entrega = Column(String)
     ponto_referencia = Column(String)
-
-
-
-class Produto(BaseModel):
-    id: int
-    nome: str
-    preco: float
-    imagem: Optional[str] = None
-    descricao: Optional[str] = None
-    avaliacao: Optional[float] = None
-    ingredientes: Optional[List[str]] = None
-    categoria: str
-
-    class Config:
-        from_attributes = True 
-
-
-class ProdutoCreate(BaseModel):
-    nome: str
-    preco: float
-    imagem: Optional[str] = None
-    descricao: Optional[str] = None
-    avaliacao: Optional[float] = None
-    ingredientes: Optional[List[str]] = None
-    categoria: str
-
-
-class Usuario(BaseModel):
-    id: int
-    username: str
-    nome: str        
-    sobrenome: str  
-    email: str
-    telefone: Optional[str] = None
-    endereco: Optional[str] = None
-    ponto_referencia: Optional[str] = None
-
-    class Config:
-        from_attributes = True
-
-
-class UsuarioCreate(BaseModel):
-    username: str
-    email: str
-    password: str
-
-
-class ItemCarrinho(BaseModel):
-    id: int
-    usuario_id: int
-    produto_id: int
-    quantidade: int
-
-    class Config:
-        from_attributes = True   
-
-
-class ItemCarrinhoCreate(BaseModel):
-    usuario_id: int
-    produto_id: int
-    quantidade: int
-
-
-class ItemPedido(BaseModel):
-    id: int
-    pedido_id: int
-    produto_id: int
-    quantidade: int
-    preco: float
-    nome: Optional[str] = None  
-    imagem: Optional[str] = None 
-
-    class Config:
-        from_attributes = True   
-
-
-class ItemPedidoCreate(BaseModel):
-    produto_id: int
-    quantidade: int
-    preco: float
-
-
-class Pedido(BaseModel):
-    id: int
-    usuario_id: int
-    total: float
-    data: datetime.datetime
-    status: str
-    itens: List[ItemPedido] = []
-    previsao_entrega: Optional[datetime.datetime] = None
-    class Config:
-        from_attributes = True  
-
-
-class PedidoCreate(BaseModel):
-    usuario_id: int
-    total: float
-    status: str
-    itens: List[ItemPedidoCreate] = []
