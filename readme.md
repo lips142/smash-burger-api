@@ -20,18 +20,25 @@ API RESTful desenvolvida com FastAPI para gerenciamento de pedidos de uma hambur
 ```
 smash-burger-api/
 ├── app/
-│   ├── main.py            # Aplicação FastAPI e todos os endpoints
-│   ├── database.py        # Conexão com PostgreSQL (SQLAlchemy)
-│   ├── models.py          # Modelos SQLAlchemy e schemas Pydantic
-│   └── create_tables.py   # Script de criação das tabelas
+│   ├── main.py             # Cria o app FastAPI, middlewares e inclui os routers
+│   ├── database.py         # Conexão com PostgreSQL (SQLAlchemy)
+│   ├── models.py           # Tabelas SQLAlchemy
+│   ├── dependencies.py     # get_db() compartilhado
+│   ├── utils.py            # Helpers compartilhados (ex: obter_hora_brasil)
+│   ├── create_tables.py    # Script de criação das tabelas
+│   └── modules/
+│       ├── auth/           # POST /login (controller.py, usecase.py, schemas.py)
+│       ├── produtos/       # GET /produtos
+│       ├── usuarios/       # GET/POST /usuarios/{id}
+│       └── pedidos/        # POST/GET /pedidos, itens, status
 ├── static/
-│   ├── images/            # Imagens dos produtos
+│   ├── images/             # Imagens dos produtos
 │   └── index.html
-├── docs/                  # Documentação dos endpoints
-├── requirements.txt       # Dependências do projeto
-├── .env.example           # Template de variáveis de ambiente
-├── popular_db.py          # Script para popular o banco com produtos
-└── test_db.py             # Teste de conexão com o banco
+├── docs/                   # Documentação dos endpoints
+├── requirements.txt        # Dependências do projeto
+├── .env.example            # Template de variáveis de ambiente
+├── popular_db.py           # Script para popular o banco com produtos
+└── test_db.py              # Teste de conexão com o banco
 ```
 
 ## Modelo de Dados
