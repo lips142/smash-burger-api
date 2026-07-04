@@ -10,6 +10,7 @@ from datetime import datetime, timedelta
 import base64
 from app.dependencies import get_db
 from app.utils import obter_hora_brasil
+from app.modules.auth.controller import router as auth_router
 
 app = FastAPI()
 
@@ -24,11 +25,8 @@ app.add_middleware(
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
+app.include_router(auth_router)
 
-class LoginData(BaseModel):
-    login: Optional[str] = None
-    username: Optional[str] = None
-    password: str
 
 class ItemPedidoCreate(BaseModel):
     produto_id: int
@@ -43,21 +41,9 @@ class PedidoCreate(BaseModel):
 
 
 
-@app.get("/produtos") 
+@app.get("/produtos")
 def listar_produtos(db: Session = Depends(get_db)):
     return db.query(models.ProdutoDB).all()
-
-@app.post("/login")
-def login(data: LoginData, db: Session = Depends(get_db)):
-    login_value = data.login or data.username
-    user = db.query(models.UsuarioDB).filter(
-        (models.UsuarioDB.username == login_value) |
-        (models.UsuarioDB.email == login_value)
-    ).first()
-
-    if user and user.password == data.password:
-        return {"success": True, "usuario_id": user.id, "message": "Login realizado com sucesso"}
-    raise HTTPException(status_code=401, detail="Credenciais inválidas")
 
 @app.post("/pedidos")
 def criar_pedido(pedido: PedidoCreate, db: Session = Depends(get_db)):
